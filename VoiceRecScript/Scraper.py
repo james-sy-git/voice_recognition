@@ -17,7 +17,7 @@ GO TO THE <A> TAG AND FIND ITS ACCOMPANYING <H3>
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 
-class Scraper(object):
+class Scraper:
     '''
     The web scraper
     '''
