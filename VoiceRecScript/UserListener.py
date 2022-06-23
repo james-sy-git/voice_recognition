@@ -25,10 +25,6 @@ class UserListener:
         '''
         Uses speech_recognition.listen() method to take input from _mic
         and stores it in stream
-
-        "with mic as source"
-
-        !! Implement try-except block to handle unrecognized speech !!
         '''
         with self._mic as source:
             self._rec.adjust_for_ambient_noise(source)
@@ -45,13 +41,13 @@ class UserListener:
         '''
         Determines whether or not the command "start" was recently uttered
         '''
-        pass
+        return self._stream == "start"
 
     def isstop(self):
         '''
         Determines whether or not the command "stop" was recently uttered
         '''
-        pass
+        return self._stream == "stop"
 
 # FOR TESTING PURPOSES
 # if __name__ == "__main__":
