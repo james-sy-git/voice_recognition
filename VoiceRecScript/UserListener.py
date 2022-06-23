@@ -17,11 +17,11 @@ class UserListener:
         Initializer
         '''
 
-        self.rec = sprec.Recognizer()
+        self._rec = sprec.Recognizer()
         self._mic = sprec.Microphone()
         self._stream = None
 
-    def listen(self):
+    def userlisten(self):
         '''
         Uses speech_recognition.listen() method to take input from _mic
         and stores it in stream
@@ -30,7 +30,16 @@ class UserListener:
 
         !! Implement try-except block to handle unrecognized speech !!
         '''
-        pass
+        with self._mic as source:
+            self._rec.adjust_for_ambient_noise(source)
+            print("Speak:")
+            audio = self._rec.listen(source)
+
+            try:
+                output = self._rec.recognize_google(audio)
+                self._stream = output.lower()
+            except sprec.UnknownValueError:
+                print("Unrecognizable input")
 
     def isstart(self):
         '''
@@ -43,3 +52,9 @@ class UserListener:
         Determines whether or not the command "stop" was recently uttered
         '''
         pass
+
+# FOR TESTING PURPOSES
+# if __name__ == "__main__":
+#     do = UserListener()
+#     do.userlisten()
+#     print(do.stream())
