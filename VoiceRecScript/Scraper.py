@@ -23,10 +23,13 @@ class Scraper:
     '''
     # Immutable attributes:
     # attribute _query:
-    # invariant: _query is
+    # invariant: _query is a string received from UserListener (desired search key words in google)
 
-    # attribte _results:
-    # invariant: _results is
+    # attribute _results:
+    # invariant: _results is a nested list of the _url and heading scraped from desired query search
+    
+    #attribute _url:
+    #invariant" _url is a string in correct https formatting using _query
 
     def set_query(self, new_query):
         '''
