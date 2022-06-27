@@ -21,7 +21,7 @@ class Controller:
         self._state = 0 #state of controller: 0 = waiting for start, 1 = start detected + listening for input, 2 = scrape + get urls, 3 = speak url + header to user, 4 = user input, 5 = go in to url and read body
         self.urls = None #list of urls created from scraper, used in text to speech
         self.listen = UserListener()
-        self.scrape = Scrape(self.urls)
+        self.scrape = Scraper(self.urls)
         self.speak = TTS(self.urls)
 
     def update(self):
