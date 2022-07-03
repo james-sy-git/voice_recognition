@@ -18,6 +18,8 @@ need to use list instead of dictionary to maintain Google's result priority and 
 
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 
 class Scraper:
     '''
@@ -60,68 +62,93 @@ class Scraper:
         '''
 
         self._query = query # safe get method from class UserListener
-        self._results = [] # a nested list
+        self._page = 1
+        self._results = self.get_results() # a nested list
         self._titles = []
-        self._url = self.createURL() # url used in search method created using speech to text input by user
 
-    def createURL(self):
-        '''
-        Modifies self._url according to the search query
-        THIS USES SELF._URL
-        '''
+        # self._url = self.createURL() # url used in search method created using speech to text input by user
 
-        stub = 'https://www.google.com/search?q='
+    # def createURL(self): # unneccessary
+    #     '''
+    #     Modifies self._url according to the search query
+    #     THIS USES SELF._URL
+    #     '''
 
-        search = stub + self.googlify()
+    #     stub = 'https://www.google.com/search?q='
 
-        return search
+    #     search = stub + self.googlify()
 
-    def googlify(self):
-        '''
-        Creates a string that can be attached to a stub
-        ex. "Michelle Obama" becomes "Michelle+Obama"
-        '''
+    #     return search
 
-        qu = self._query.replace(' ', '+')
-        return qu
+    # def googlify(self): # unneccessary
+    #     '''
+    #     Creates a string that can be attached to a stub
+    #     ex. "Michelle Obama" becomes "Michelle+Obama"
+    #     '''
 
+    #     qu = self._query.replace(' ', '+')
+    #     return qu
+
+
+    # def read(self): # Requests is unneccessary
+    #     '''
+    #     Creates a BeautifulSoup object for this Scraper's URL
+    #     '''
+
+    #     req = Request(self._url, headers={'User-Agent': 'Mozilla/5.0'}) # https://stackoverflow.com/questions/16627227/problem-http-error-403-in-python-3-web-scraping
+    #     page = urlopen(req)
+
+    #     bytes = page.read()
+    #     html = bytes.decode('utf-8')
+    #     soup = BeautifulSoup(html, 'html.parser')
+
+    #     return soup
+
+    # def search_urls(self, num_results):         # DOESNT WORK LIKE WE WANT
+    #     '''
+    #     Searches google using the search query
+    #     Returns a nested list with the URL and the title
+    #     '''
+
+        # cutoff = 0
+
+        # page = self.read().body
+
+        # all_links = page.find_all('a')
+        # for link in all_links:
+        #     if cutoff < num_results:
+        #         if link.has_attr('href') and not link.has_attr('class'): # take out the second part if we want the news "fluff"
+        #             if 'url?q=' in link.get('href'):
+        #                 self._results.append(link.get('href'))
+        #                 try:
+        #                     title = link.find('h3')
+        #                     self._titles.append(title.getText())
+        #                 except:
+        #                     pass
+        #                 cutoff = cutoff + 1
 
     def read(self):
-        '''
-        Creates a BeautifulSoup object for this Scraper's URL
-        '''
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--headless")
+        driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=chrome_options)
 
-        req = Request(self._url, headers={'User-Agent': 'Mozilla/5.0'}) # https://stackoverflow.com/questions/16627227/problem-http-error-403-in-python-3-web-scraping
-        page = urlopen(req)
-
-        bytes = page.read()
-        html = bytes.decode('utf-8')
-        soup = BeautifulSoup(html, 'html.parser')
+        url = "http://www.google.com/search?q=" + self._query + "&start=" + str((self._page - 1) * 10)
+        driver.get(url)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
 
         return soup
 
-    def search_urls(self, num_results):
-        '''
-        Searches google using the search query
-        Returns a nested list with the URL and the title
-        '''
+    def get_results(self):
+        results = []
 
-        cutoff = 0
+        parsable = self.read()
 
-        page = self.read().body
+        search = parsable.find_all('div', class_='yuRUbf')
+        for h in search:
+            if h.find_parents('div', {'jsname' : 'rozPHf'}) == []:
+                results.append(h.a.get('href'))
 
-        all_links = page.find_all('a')
-        for link in all_links:
-            if cutoff < num_results:
-                if link.has_attr('href') and not link.has_attr('class'): # take out the second part if we want the news "fluff"
-                    if 'url?q=' in link.get('href'):
-                        self._results.append(link.get('href'))
-                        try:
-                            title = link.find('h3')
-                            self._titles.append(title.getText())
-                        except:
-                            pass
-                        cutoff = cutoff + 1
+        return results
 
     def clear(self):
         '''
@@ -131,7 +158,6 @@ class Scraper:
         self._results = []
 
 if __name__ == "__main__":
-    test_query = "obama"
+    test_query = "barack obama"
     test = Scraper(test_query)
-    test.search_urls(4)
-    print(test._titles)
+    print(test.results())
