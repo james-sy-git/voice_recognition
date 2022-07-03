@@ -35,17 +35,24 @@ class Scraper:
     #attribute _url:
     #invariant" _url is a string in correct https formatting using _query
 
-    def geturl(self):
+    def get_page(self):
         '''
         Returns this Scraper's URL
         '''
-        return self._url
+        return self._page
+
+    def set_page(self, value):
+        '''
+        Changes which Google result page to be scraped
+        '''
+        # asserts here
+        self._page = value
 
     def set_query(self, new_query):
         '''
         Inserts a new search query
         '''
-
+        # asserts here
         self._query = new_query
 
     def results(self):
@@ -61,71 +68,15 @@ class Scraper:
         Initializer
         '''
 
-        self._query = query # safe get method from class UserListener
+        self._query = query.strip() # safe get method from class UserListener
         self._page = 1
-        self._results = self.get_results() # a nested list
-        self._titles = []
+        try:
+            self._results = self.get_results() # a list full of tuples or None
+        
+        except: # need 'URL not found error or something similar'
+            self._results = []
+            print('Search query could not find any results :/')
 
-        # self._url = self.createURL() # url used in search method created using speech to text input by user
-
-    # def createURL(self): # unneccessary
-    #     '''
-    #     Modifies self._url according to the search query
-    #     THIS USES SELF._URL
-    #     '''
-
-    #     stub = 'https://www.google.com/search?q='
-
-    #     search = stub + self.googlify()
-
-    #     return search
-
-    # def googlify(self): # unneccessary
-    #     '''
-    #     Creates a string that can be attached to a stub
-    #     ex. "Michelle Obama" becomes "Michelle+Obama"
-    #     '''
-
-    #     qu = self._query.replace(' ', '+')
-    #     return qu
-
-
-    # def read(self): # Requests is unneccessary
-    #     '''
-    #     Creates a BeautifulSoup object for this Scraper's URL
-    #     '''
-
-    #     req = Request(self._url, headers={'User-Agent': 'Mozilla/5.0'}) # https://stackoverflow.com/questions/16627227/problem-http-error-403-in-python-3-web-scraping
-    #     page = urlopen(req)
-
-    #     bytes = page.read()
-    #     html = bytes.decode('utf-8')
-    #     soup = BeautifulSoup(html, 'html.parser')
-
-    #     return soup
-
-    # def search_urls(self, num_results):         # DOESNT WORK LIKE WE WANT
-    #     '''
-    #     Searches google using the search query
-    #     Returns a nested list with the URL and the title
-    #     '''
-
-        # cutoff = 0
-
-        # page = self.read().body
-
-        # all_links = page.find_all('a')
-        # for link in all_links:
-        #     if cutoff < num_results:
-        #         if link.has_attr('href') and not link.has_attr('class'): # take out the second part if we want the news "fluff"
-        #             if 'url?q=' in link.get('href'):
-        #                 self._results.append(link.get('href'))
-        #                 try:
-        #                     title = link.find('h3')
-        #                     self._titles.append(title.getText())
-        #                 except:
-        #                     pass
-        #                 cutoff = cutoff + 1
 
     def read(self):
         chrome_options = webdriver.ChromeOptions()
@@ -145,8 +96,15 @@ class Scraper:
 
         search = parsable.find_all('div', class_='yuRUbf')
         for h in search:
-            if h.find_parents('div', {'jsname' : 'rozPHf'}) == []:
-                results.append(h.a.get('href'))
+            if self._page == 1:
+                if h.find_parents('div', {'jsname' : 'rozPHf'}) == []: # only applies the "people also ask" filter to 1st page of results
+                    url = h.a.get('href')
+                    title = h.find('h3').string
+                    results.append((url, title))
+            else:
+                url = h.a.get('href')
+                title = h.find('h3').string
+                results.append((url, title))
 
         return results
 
@@ -157,7 +115,7 @@ class Scraper:
 
         self._results = []
 
-if __name__ == "__main__":
-    test_query = "barack obama"
-    test = Scraper(test_query)
-    print(test.results())
+# if __name__ == "__main__":
+#     test_query = "barack obama"
+#     test = Scraper(test_query)
+#     print(test.results())
