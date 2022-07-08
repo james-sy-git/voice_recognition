@@ -104,7 +104,7 @@ class Scraper:
             else:
                 url = h.a.get('href')
                 title = h.find('h3').string
-                results.append((url, title))
+                results.append({url : title})
 
         return results
 
