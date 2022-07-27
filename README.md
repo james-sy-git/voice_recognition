@@ -1,5 +1,7 @@
 # voice_recognition
 
+CURRENTLY ON HOLD
+
 Voice recognition assistant app, targeted towards those who cannot read a computer screen or operate a keyboard well.
 
 Waits on user commands, before taking a user's spoken Google search query.
